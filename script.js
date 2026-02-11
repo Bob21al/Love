@@ -5,6 +5,9 @@ const book = document.querySelector("#book");
 const body = document.querySelector("body");
 const introScreen = document.querySelector("#intro-screen");
 const introStartBtn = document.querySelector("#intro-start-btn");
+const siteLoader = document.querySelector("#site-loader");
+const allImages = Array.from(document.querySelectorAll("img, .photo-placeholder"));
+const bgMusic = document.querySelector("#background-music");
 
 const papers = Array.from(document.querySelectorAll(".paper"));
 
@@ -13,6 +16,7 @@ const maxLocation = papers.length;
 let openAnimationTimeout;
 let isPageTurning = false;
 let isIntroCompleted = false;
+let isSiteReady = false;
 
 const DEBUG_PAGE_TURN = true;
 const PAGE_TURN_TIMEOUT_MS = 1200;
@@ -22,6 +26,49 @@ prevBtn.addEventListener("click", goPrevPage);
 nextBtn.addEventListener("click", goNextPage);
 papers[0].addEventListener("click", goNextPage);
 introStartBtn.addEventListener("click", startIntroExperience);
+
+window.addEventListener("load", preloadSiteAssets);
+
+function preloadSiteAssets() {
+    const imageUrls = allImages
+        .map((el) => {
+            if (el.tagName === "IMG") return el.src;
+            const inlineBg = el.style.backgroundImage || "";
+            const match = inlineBg.match(/url\(['"]?(.*?)['"]?\)/);
+            return match ? match[1] : null;
+        })
+        .filter(Boolean);
+
+    const preloadPromises = imageUrls.map((src) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve;
+            img.src = src;
+        });
+    });
+
+    preloadPromises.push(
+        new Promise((resolve) => {
+            if (!bgMusic) return resolve();
+            const done = () => {
+                bgMusic.removeEventListener("canplaythrough", done);
+                resolve();
+            };
+            bgMusic.addEventListener("canplaythrough", done, { once: true });
+            bgMusic.load();
+            setTimeout(done, 2500);
+        })
+    );
+
+    Promise.all(preloadPromises).then(() => {
+        isSiteReady = true;
+        body.classList.remove("loading-site");
+        siteLoader.classList.add("hidden");
+        introStartBtn.disabled = false;
+        introStartBtn.textContent = "нажми";
+    });
+}
 
 let touchStartX = 0;
 let touchStartY = 0;
@@ -61,7 +108,7 @@ function handleTouchEnd(event) {
 }
 
 function startIntroExperience() {
-    if (isIntroCompleted) return;
+    if (isIntroCompleted || !isSiteReady) return;
 
     isIntroCompleted = true;
 

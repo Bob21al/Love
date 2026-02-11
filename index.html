@@ -10,14 +10,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="intro-active">
+<body class="intro-active loading-site">
+
+    <div id="site-loader" class="site-loader">
+        <div class="loader-card">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">Загружаю открытку</p>
+        </div>
+    </div>
 
     <div id="intro-screen" class="intro-screen">
         <div class="intro-content">
             <p class="intro-text">
                 Я сейчас далеко, но все равно очень хотел сделать тебе открытку
             </p>
-            <button id="intro-start-btn" class="intro-start-btn">нажми</button>
+            <button id="intro-start-btn" class="intro-start-btn" disabled>загрузка</button>
         </div>
     </div>
 
