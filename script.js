@@ -188,6 +188,12 @@ function updateNavButtons() {
         prevBtn.classList.remove("hidden");
         nextBtn.classList.remove("hidden");
     }
+
+    // На телефонах всегда оставляем кнопки доступными
+    if (window.matchMedia("(max-width: 768px)").matches) {
+        prevBtn.classList.remove("hidden");
+        nextBtn.classList.remove("hidden");
+    }
 }
 
 function waitForPageTurn(page, onDone) {

@@ -721,8 +721,10 @@ p {
 /* --- АДАПТИВ --- */
 @media (max-width: 768px) {
     .book {
-        width: min(94vw, 420px);
-        height: min(76vh, 620px);
+        width: min(92vw, 420px);
+        height: auto;
+        aspect-ratio: 7 / 10;
+        max-height: 76vh;
         transform: scale(1);
     }
     .book.open { transform: translateX(0); }
@@ -730,12 +732,19 @@ p {
     .book.is-opening {
         animation: cinematicOpenZoomMobile 0.95s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .nav-btn { display: none !important; }
+    .nav-btn {
+        width: 50px;
+        height: 50px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    #prev-btn { left: 10px; }
+    #next-btn { right: 10px; }
     .intro-text {
         line-height: 1.45;
         max-width: 94vw;
         margin-left: auto;
         margin-right: auto;
+        font-size: clamp(0.92rem, 3.6vw, 1.02rem);
     }
     .front-content, .back-content {
         padding: 14px;
@@ -743,7 +752,7 @@ p {
     h1 { font-size: clamp(2.2rem, 8vw, 3rem); }
     h2 { font-size: clamp(0.95rem, 3.4vw, 1.1rem); }
     h3 { font-size: clamp(1.85rem, 7vw, 2.3rem); }
-    p { font-size: clamp(0.84rem, 3vw, 0.96rem); line-height: 1.45; }
+    p { font-size: clamp(0.82rem, 2.8vw, 0.95rem); line-height: 1.42; }
 
     .two-photos .photo-placeholder {
         width: 95%;
@@ -778,8 +787,10 @@ p {
 
 @media (max-width: 420px) {
     .book {
-        width: 96vw;
-        height: min(78vh, 640px);
+        width: 95vw;
+        height: auto;
+        aspect-ratio: 7 / 10;
+        max-height: 72vh;
     }
     .book.open { transform: translateX(0); }
     .book.close-right { transform: translateX(0); }
@@ -787,7 +798,16 @@ p {
         padding-top: 8px;
     }
     .front-content, .back-content {
-        padding: 12px;
+        padding: 10px;
+    }
+
+    .intro-text {
+        font-size: clamp(0.86rem, 3.9vw, 0.94rem);
+        margin-bottom: 16px;
+    }
+
+    .intro-start-btn {
+        padding: 10px 24px;
     }
 }
 
