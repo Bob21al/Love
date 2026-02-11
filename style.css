@@ -1,0 +1,697 @@
+/* --- СБРОС --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* --- ФОН (СТОЛ С ЛАМПОЙ) --- */
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Merriweather', serif;
+    overflow: hidden;
+    
+    /* Более реалистичный тёмный деревянный стол: волокна + прожилки + свет лампы + виньетка */
+    background-color: #1c120b;
+    background-image:
+        /* Виньетка */
+        radial-gradient(circle at center, rgba(0, 0, 0, 0) 28%, rgba(0, 0, 0, 0.78) 100%),
+        /* Тёплое пятно света */
+        radial-gradient(circle at 50% 42%, rgba(255, 220, 170, 0.42) 0%, rgba(255, 220, 170, 0.16) 32%, rgba(0, 0, 0, 0) 64%),
+        radial-gradient(circle at 50% 38%, rgba(255, 245, 220, 0.18) 0%, rgba(255, 245, 220, 0) 24%),
+        /* Длинные волокна дерева */
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 230, 190, 0.06) 0px,
+            rgba(255, 230, 190, 0.02) 2px,
+            rgba(80, 45, 25, 0.02) 6px,
+            rgba(25, 12, 7, 0.09) 10px,
+            rgba(255, 230, 190, 0.03) 14px,
+            rgba(25, 12, 7, 0.1) 20px
+        ),
+        /* Неровные тёмные прожилки */
+        repeating-linear-gradient(
+            94deg,
+            rgba(0, 0, 0, 0) 0px,
+            rgba(0, 0, 0, 0.08) 36px,
+            rgba(0, 0, 0, 0.16) 40px,
+            rgba(0, 0, 0, 0) 54px
+        ),
+        /* Базовый градиент дерева */
+        linear-gradient(180deg, #3a2215 0%, #2a180f 40%, #1a100a 100%);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 320px 100%, 460px 100%, 100% 100%;
+    background-blend-mode: normal, screen, screen, overlay, multiply, normal;
+    position: relative;
+}
+
+/* Лёгкие «пушинки» поверх фона */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: -10%;
+    pointer-events: none;
+    z-index: 0;
+    background-repeat: repeat;
+}
+
+body::before {
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.24) 0 1.3px, transparent 1.6px),
+        radial-gradient(circle, rgba(255, 240, 225, 0.18) 0 1px, transparent 1.4px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.12) 0 1.8px, transparent 2.2px);
+    background-size: 180px 180px, 240px 240px, 320px 320px;
+    background-position: 0 0, 80px 40px, 160px 100px;
+    animation: floatDustA var(--dust-duration-a) linear infinite;
+    opacity: var(--dust-music-opacity);
+}
+
+body::after {
+    background-image:
+        radial-gradient(circle, rgba(255, 235, 210, 0.2) 0 1.2px, transparent 1.7px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.12) 0 0.9px, transparent 1.3px);
+    background-size: 220px 220px, 300px 300px;
+    background-position: 40px 120px, 140px 30px;
+    animation: floatDustB var(--dust-duration-b) linear infinite;
+    opacity: calc(var(--dust-music-opacity) * 0.78);
+}
+
+@keyframes floatDustA {
+    0% {
+        transform: translate3d(0, 0, 0) scale(var(--dust-music-scale));
+    }
+    50% {
+        transform: translate3d(-12px, -18px, 0) scale(calc(var(--dust-music-scale) * 1.02));
+    }
+    100% {
+        transform: translate3d(-24px, -36px, 0) scale(calc(var(--dust-music-scale) * 1.04));
+    }
+}
+
+@keyframes floatDustB {
+    0% {
+        transform: translate3d(0, 0, 0) scale(var(--dust-music-scale));
+    }
+    50% {
+        transform: translate3d(14px, -10px, 0) scale(calc(var(--dust-music-scale) * 1.01));
+    }
+    100% {
+        transform: translate3d(28px, -20px, 0) scale(calc(var(--dust-music-scale) * 1.02));
+    }
+}
+
+:root {
+    --cover-color: #8a3b3b;
+    --paper-color: #fdfbf0;
+    --text-color: #4a3b32;
+    --gold: #d4af37;
+    --dust-music-opacity: 0.55;
+    --dust-music-scale: 1;
+    --dust-duration-a: 24s;
+    --dust-duration-b: 30s;
+}
+
+/* --- КНИГА --- */
+.book {
+    position: relative;
+    width: 350px;
+    height: 500px;
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s ease;
+    perspective: 1500px; 
+    transform-origin: center center;
+    will-change: transform;
+    z-index: 1;
+}
+
+/* Начальная заставка */
+.intro-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    z-index: 50;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+}
+
+.intro-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.intro-content {
+    max-width: 620px;
+    padding: 28px 24px;
+    text-align: center;
+}
+
+.intro-text {
+    color: #19120d;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    font-weight: 700;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.15);
+    white-space: nowrap;
+    margin-bottom: 24px;
+    animation: introTextBreath 4.2s ease-in-out infinite;
+}
+
+@keyframes introTextBreath {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.92;
+    }
+    50% {
+        transform: translateY(-1px) scale(1.015);
+        opacity: 1;
+    }
+}
+
+.intro-start-btn {
+    border: 2px solid rgba(0,0,0,0.55);
+    background: rgba(255, 245, 225, 0.45);
+    color: #1b120e;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 12px 34px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+}
+
+.intro-start-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(255, 245, 225, 0.7);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+}
+
+/* До нажатия открытка спрятана */
+.book.pre-intro {
+    transform: translateY(120vh) scale(0.94);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 1.15s cubic-bezier(0.18, 0.9, 0.2, 1), opacity 0.7s ease;
+}
+
+/* После нажатия открытка выезжает снизу */
+.book.reveal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- ТЕНЬ КНИГИ (Через псевдоэлемент для гибкости) --- */
+.book::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    bottom: -10px;
+    left: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, transparent 70%);
+    transition: all 0.6s ease;
+    z-index: -1;
+}
+
+/* Тень когда книга ОТКРЫТА */
+.book.open::before {
+    width: 180%; /* Тень становится шире */
+    left: -40%;
+    opacity: 0.3; /* И мягче, так как страницы подняты */
+}
+
+/* Тень когда книга ПОЛНОСТЬЮ ЗАКРЫТА (конец) */
+.book.close-right::before {
+    width: 100%;
+    left: 0;
+    opacity: 0.5; /* Снова компактная тень */
+}
+
+
+/* --- СТРАНИЦА --- */
+.paper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    perspective: 1500px;
+    transform-origin: left;
+    transform-style: preserve-3d;
+    transition: transform 0.95s cubic-bezier(0.2, 0.85, 0.25, 1);
+}
+
+/* Мягкая тень между страницами во время и после переворота */
+.paper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 0 15px 15px 0;
+    background:
+        linear-gradient(to right, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.06) 10%, rgba(0, 0, 0, 0) 28%),
+        linear-gradient(to left, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.03) 12%, rgba(0, 0, 0, 0) 32%);
+    opacity: 0;
+    transition: opacity 0.38s ease;
+    z-index: 3;
+}
+
+.paper.is-turning::after {
+    opacity: 0.52;
+}
+
+/* --- ОБНОВЛЕННЫЕ СТРАНИЦЫ --- */
+.front, .back {
+    background-color: var(--paper-color);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backface-visibility: hidden;
+    
+    /* Убираем закругление с внутренней стороны (слева для лица, справа для оборота) */
+    box-shadow: 0 8px 18px rgba(0,0,0,0.16), 0 1px 1px rgba(0,0,0,0.08);
+}
+
+/* Лицевая сторона страницы (когда она справа) */
+.front {
+    z-index: 2;
+    border-radius: 0 15px 15px 0; /* Закругление только справа */
+    /* Тень на сгибе (слева) */
+    background-image: linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.04) 12%, rgba(0,0,0,0) 28%);
+}
+
+/* Оборотная сторона (когда она перевернута и лежит слева) */
+.back {
+    z-index: 1;
+    transform: rotateY(180deg);
+    border-radius: 15px 0 0 15px; /* Закругление только слева */
+    /* Тень на сгибе (теперь она справа) */
+    background-image: linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.04) 12%, rgba(0,0,0,0) 28%);
+}
+
+/* Обложки тоже должны следовать этому правилу */
+.cover-design.front {
+    border-radius: 0 15px 15px 0;
+    border-left: none;
+}
+
+.back-cover.back {
+    border-radius: 15px 0 0 15px;
+    border-right: none;
+}
+
+/* --- ЭФФЕКТ КОРЕШКА (ЛИНИЯ СГИБА) --- */
+.book::after {
+    content: '';
+    position: absolute;
+    left: 0; /* Центр открытой книги */
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.24), rgba(0,0,0,0.04));
+    z-index: 10;
+    opacity: 0;
+    transform: scaleY(0.92);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.book.open::after {
+    opacity: 0.45;
+    transform: scaleY(1);
+}
+
+.book.close-right::after {
+    opacity: 0.15;
+    transform: scaleY(0.96);
+}
+
+/* --- ИСПРАВЛЕНИЕ ТЕНИ ПОД КНИГОЙ --- */
+.book::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    bottom: -30px;
+    left: 0;
+    background: rgba(0,0,0,0.4);
+    filter: blur(20px);
+    border-radius: 50%;
+    transition: all 0.6s ease;
+    z-index: -1;
+}
+
+.book.open::before {
+    width: 200%;
+    left: -50%;
+    opacity: 0.5;
+}
+
+.front {
+    z-index: 2;
+    /* Текстура бумаги */
+    background-image:
+        radial-gradient(circle at 12% 16%, rgba(120, 90, 60, 0.07) 0 1.5px, transparent 1.7px),
+        radial-gradient(circle at 78% 72%, rgba(120, 90, 60, 0.06) 0 1.3px, transparent 1.5px),
+        repeating-linear-gradient(45deg, rgba(90, 65, 45, 0.035) 0 1px, transparent 1px 4px),
+        linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.03) 12%, rgba(0,0,0,0) 28%);
+    background-size: 120px 120px, 150px 150px, 7px 7px, 100% 100%;
+}
+
+.back {
+    z-index: 1;
+    transform: rotateY(180deg);
+    /* Текстура бумаги и тень у сгиба */
+    background-image:
+        radial-gradient(circle at 20% 70%, rgba(120, 90, 60, 0.06) 0 1.3px, transparent 1.5px),
+        radial-gradient(circle at 85% 18%, rgba(120, 90, 60, 0.07) 0 1.5px, transparent 1.7px),
+        repeating-linear-gradient(-45deg, rgba(90, 65, 45, 0.035) 0 1px, transparent 1px 4px),
+        linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.03) 12%, rgba(0,0,0,0) 28%);
+    background-size: 120px 120px, 150px 150px, 7px 7px, 100% 100%;
+}
+
+/* Дополнительная явно видимая бумажная фактура сверху */
+.front::before,
+.back::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background-image:
+        radial-gradient(circle at 25% 30%, rgba(120, 90, 60, 0.06) 0 0.9px, transparent 1.1px),
+        radial-gradient(circle at 70% 65%, rgba(120, 90, 60, 0.05) 0 0.8px, transparent 1px),
+        repeating-linear-gradient(0deg, rgba(90, 65, 45, 0.02) 0 1px, transparent 1px 3px);
+    background-size: 90px 90px, 120px 120px, 100% 3px;
+    mix-blend-mode: multiply;
+    opacity: 0.5;
+    z-index: 2;
+}
+
+/* Логика слоев и переворота */
+.flipped {
+    transform: rotateY(-180deg);
+    transition: transform 0.95s cubic-bezier(0.2, 0.85, 0.25, 1);
+    z-index: 0 !important;
+}
+
+/* --- ПОРЯДОК --- */
+#p1 { z-index: 10; }
+#p2 { z-index: 9; }
+#p3 { z-index: 8; }
+#p4 { z-index: 7; }
+#p6 { z-index: 6; }
+#p7 { z-index: 5; }
+#p8 { z-index: 4; }
+#p9 { z-index: 3; }
+#p10 { z-index: 2; }
+#p5 { z-index: 1; }
+
+/* --- КОНТЕНТ --- */
+.front-content, .back-content {
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--text-color);
+}
+
+/* Обложка */
+.cover-design {
+    background-color: var(--cover-color);
+    background-image:
+        radial-gradient(circle at 20% 18%, rgba(255, 240, 220, 0.22) 0%, rgba(255, 240, 220, 0) 34%),
+        radial-gradient(circle at 78% 80%, rgba(255, 215, 170, 0.14) 0%, rgba(255, 215, 170, 0) 40%),
+        linear-gradient(145deg, #c83a2f 0%, #b22b24 30%, #8e1f1d 64%, #681516 100%);
+    color: #ffffff;
+    border: 3px solid var(--gold);
+    border-radius: 4px 15px 15px 4px; /* Совпадает с бумагой */
+    box-shadow:
+        inset 0 0 42px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 8px 24px rgba(0, 0, 0, 0.22); /* Глубина + мягкое свечение */
+}
+
+.cover-design h1,
+.cover-design h2 {
+    text-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.26),
+        0 0 18px rgba(255, 214, 161, 0.16);
+}
+
+h1 { font-family: 'Great Vibes', cursive; font-size: 3.5rem; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+h2 { font-size: 1.2rem; color: var(--gold); margin-bottom: 40px; }
+h3 { font-family: 'Great Vibes', cursive; font-size: 2.5rem; color: var(--cover-color); margin-bottom: 20px; }
+p {
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    text-align: left;
+    max-width: 90%;
+}
+
+.text-centered {
+    text-align: center;
+    max-width: 100%;
+}
+.instruction {
+    color: var(--gold);
+    animation: softPrompt 2.8s ease-in-out infinite;
+    font-size: 0.9rem;
+    margin-top: 30px;
+    text-transform: lowercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.25s ease, text-shadow 0.25s ease, opacity 0.25s ease;
+    opacity: 0.9;
+}
+
+@keyframes softPrompt {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.85;
+    }
+    50% {
+        transform: translateY(-4px) scale(1.03);
+        opacity: 0.9;
+    }
+}
+
+.instruction:hover {
+    animation-play-state: paused;
+    text-shadow: 0 0 12px rgba(212, 175, 55, 0.7);
+    transform: translateY(-2px) scale(1.04);
+    opacity: 1;
+}
+
+.photo-placeholders-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+    justify-content: space-around;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Стили для 2 фото (на страницах b2 и b3) */
+.two-photos {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.two-photos .photo-placeholder {
+    width: 90%;
+    height: 40%;
+    background-size: cover;
+    background-position: center;
+    border: 5px solid #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    transform: rotate(-2deg);
+    margin-bottom: 10px;
+}
+
+.two-photos .photo-placeholder:last-child {
+    transform: rotate(2deg);
+    margin-bottom: 0;
+}
+
+/* Стили для 4 квадратных фото 1 на 1 (на странице b3) */
+.four-square-photos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-items: center;
+}
+
+.four-square-photos .photo-placeholder {
+    width: 90%;
+    height: 90%;
+    background-size: cover;
+    background-position: center;
+    border: 5px solid #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    transform: rotate(-2deg);
+    margin: 0;
+}
+
+.four-square-photos .photo-placeholder:nth-child(2) {
+    transform: rotate(2deg);
+}
+
+.four-square-photos .photo-placeholder:nth-child(3) {
+    transform: rotate(-1deg);
+}
+
+.four-square-photos .photo-placeholder:nth-child(4) {
+    transform: rotate(1deg);
+}
+
+/* Стили для 4 фото (на странице b4) */
+.four-photos {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.four-photos .photo-placeholder {
+    width: 90%;
+    height: 18%;
+    background-size: cover;
+    background-position: center;
+    border: 5px solid #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    transform: rotate(-2deg);
+    margin-bottom: 5px;
+}
+
+.four-photos .photo-placeholder:nth-child(2) {
+    transform: rotate(2deg);
+}
+
+.four-photos .photo-placeholder:nth-child(3) {
+    transform: rotate(-1deg);
+}
+
+.four-photos .photo-placeholder:last-child {
+    transform: rotate(1deg);
+    margin-bottom: 0;
+}
+
+/* Стили для одиночного фото */
+.back-content:not(.photo-placeholders-container) .photo-placeholder {
+    width: 90%;
+    height: 80%;
+    background-size: cover;
+    background-position: center;
+    border: 5px solid #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    transform: rotate(-2deg);
+}
+
+/* Пустые места под будущие фото */
+.empty-photo {
+    background-image: linear-gradient(135deg, #d8d8d8, #c6c6c6);
+    border: 5px solid #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+.decoration {
+    font-size: 2rem;
+    color: var(--cover-color);
+    margin-top: 15px;
+}
+.love-list { list-style: none; text-align: left; width: 85%; }
+.love-list li { margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 5px; }
+.collage { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; transform: rotate(2deg); }
+.collage-item { height: 120px; background: #ddd; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white;}
+/* --- КНОПКИ --- */
+.nav-btn {
+    position: absolute; bottom: 20px; width: 50px; height: 50px;
+    background: rgba(255, 255, 255, 0.8); border-radius: 50%; border: 1px solid var(--gold);
+    color: var(--cover-color); font-size: 1.2rem; cursor: pointer;
+    transition: all 0.3s; opacity: 0; pointer-events: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.nav-btn:hover { background: #fff; transform: scale(1.1); }
+#prev-btn { left: 80px; }
+#next-btn { right: 80px; }
+
+/* Видимость кнопок */
+.btns-visible #prev-btn, .btns-visible #next-btn { opacity: 1; pointer-events: auto; }
+.btns-visible #prev-btn.hidden, .btns-visible #next-btn.hidden { opacity: 0; pointer-events: none; }
+
+/* --- СОСТОЯНИЯ КНИГИ --- */
+.book.open { transform: translateX(50%); } /* Сдвиг вправо, когда читаем */
+.book.close-right { transform: translateX(100%); } /* Сдвиг полностью вправо, когда закрыли */
+
+/* Короткое стильное приближение при открытии */
+.book.is-opening {
+    animation: cinematicOpenZoom 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cinematicOpenZoom {
+    0% {
+        transform: translateX(0) scale(1);
+        filter: brightness(0.96) saturate(0.95);
+    }
+    45% {
+        transform: translateX(26%) scale(1.045);
+        filter: brightness(1.02) saturate(1.03);
+    }
+    100% {
+        transform: translateX(50%) scale(1.02);
+        filter: brightness(1) saturate(1);
+    }
+}
+
+/* --- АДАПТИВ --- */
+@media (max-width: 768px) {
+    .book { transform: scale(0.7); }
+    .book.open { transform: scale(0.7) translateX(30px); }
+    .book.close-right { transform: scale(0.7) translateX(60px); }
+    .book.is-opening {
+        animation: cinematicOpenZoomMobile 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #prev-btn { left: 20px; } #next-btn { right: 20px; }
+}
+
+@keyframes cinematicOpenZoomMobile {
+    0% {
+        transform: scale(0.7) translateX(0);
+        filter: brightness(0.96) saturate(0.95);
+    }
+    45% {
+        transform: scale(0.73) translateX(18px);
+        filter: brightness(1.02) saturate(1.03);
+    }
+    100% {
+        transform: scale(0.7) translateX(30px);
+        filter: brightness(1) saturate(1);
+    }
+}
+
+/* Скрытие аудио-элемента */
+audio {
+    display: none;
+}
