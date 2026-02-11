@@ -721,10 +721,10 @@ p {
 /* --- АДАПТИВ --- */
 @media (max-width: 768px) {
     .book {
-        width: min(92vw, 420px);
+        width: min(96vw, 460px);
         height: auto;
         aspect-ratio: 7 / 10;
-        max-height: 76vh;
+        max-height: 82vh;
         transform: scale(1);
     }
     .book.open { transform: translateX(0); }
@@ -787,10 +787,10 @@ p {
 
 @media (max-width: 420px) {
     .book {
-        width: 95vw;
+        width: 98vw;
         height: auto;
         aspect-ratio: 7 / 10;
-        max-height: 72vh;
+        max-height: 84vh;
     }
     .book.open { transform: translateX(0); }
     .book.close-right { transform: translateX(0); }
