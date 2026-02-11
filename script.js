@@ -23,6 +23,43 @@ nextBtn.addEventListener("click", goNextPage);
 papers[0].addEventListener("click", goNextPage);
 introStartBtn.addEventListener("click", startIntroExperience);
 
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+const SWIPE_THRESHOLD = 45;
+const SWIPE_MAX_Y_DIFF = 80;
+
+book.addEventListener("touchstart", handleTouchStart, { passive: true });
+book.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+function handleTouchStart(event) {
+    if (!isIntroCompleted || isPageTurning) return;
+    const touch = event.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}
+
+function handleTouchEnd(event) {
+    if (!isIntroCompleted || isPageTurning) return;
+    const touch = event.changedTouches[0];
+    touchEndX = touch.clientX;
+    touchEndY = touch.clientY;
+
+    const diffX = touchEndX - touchStartX;
+    const diffY = Math.abs(touchEndY - touchStartY);
+
+    if (diffY > SWIPE_MAX_Y_DIFF || Math.abs(diffX) < SWIPE_THRESHOLD) {
+        return;
+    }
+
+    if (diffX < 0) {
+        goNextPage();
+    } else {
+        goPrevPage();
+    }
+}
+
 function startIntroExperience() {
     if (isIntroCompleted) return;
 
